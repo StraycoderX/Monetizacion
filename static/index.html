@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Conversor de Monedas</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <span class="badge">Tasas en tiempo real</span>
+        <h1>Convierte divisas con precisión</h1>
+        <p>
+          Consulta tasas actualizadas y obtén un resultado exacto con cálculos en
+          alta precisión.
+        </p>
+      </header>
+
+      <main class="card">
+        <form id="converter-form">
+          <div class="field">
+            <label for="amount">Monto</label>
+            <input
+              id="amount"
+              name="amount"
+              type="number"
+              step="0.01"
+              min="0"
+              placeholder="Ej. 250.00"
+              required
+            />
+          </div>
+
+          <div class="field-group">
+            <div class="field">
+              <label for="from-currency">De</label>
+              <select id="from-currency" name="from_currency" required>
+                <option value="USD">USD - Dólar</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="MXN">MXN - Peso MX</option>
+                <option value="COP">COP - Peso CO</option>
+                <option value="ARS">ARS - Peso AR</option>
+                <option value="CLP">CLP - Peso CL</option>
+                <option value="PEN">PEN - Sol</option>
+                <option value="BRL">BRL - Real</option>
+              </select>
+            </div>
+
+            <button class="swap" type="button" aria-label="Invertir monedas">
+              ⇄
+            </button>
+
+            <div class="field">
+              <label for="to-currency">A</label>
+              <select id="to-currency" name="to_currency" required>
+                <option value="EUR">EUR - Euro</option>
+                <option value="USD">USD - Dólar</option>
+                <option value="MXN">MXN - Peso MX</option>
+                <option value="COP">COP - Peso CO</option>
+                <option value="ARS">ARS - Peso AR</option>
+                <option value="CLP">CLP - Peso CL</option>
+                <option value="PEN">PEN - Sol</option>
+                <option value="BRL">BRL - Real</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="primary" type="submit">Convertir</button>
+        </form>
+
+        <section class="result" aria-live="polite">
+          <div>
+            <p class="result-label">Resultado</p>
+            <p class="result-value" id="result-value">--</p>
+            <p class="result-meta" id="result-meta">Ingresa un monto para empezar.</p>
+          </div>
+          <div class="result-info" id="result-info"></div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <span>Datos provistos por Open Exchange Rates.</span>
+      </footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
