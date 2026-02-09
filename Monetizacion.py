@@ -6,7 +6,8 @@ import urllib.request
 import urllib.error
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP, getcontext
 
-API_BASE_URL = "https://openexchangerates.org/api/latest.json?app_id=8b0407458ab24c849cb91be32f3999bf"
+API_BASE_URL = "https://openexchangerates.org/api/latest.json"
+API_APP_ID_ENV = "OPENEXCHANGERATES_APP_ID"
 
 class CurrencyConverter(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
@@ -107,7 +108,14 @@ class CurrencyConverter(http.server.BaseHTTPRequestHandler):
         if from_currency == to_currency:
             return amount, Decimal("1"), None
 
-        url = f"{API_BASE_URL}&symbols={from_currency},{to_currency}"
+        app_id = os.environ.get(API_APP_ID_ENV)
+        if not app_id:
+            return None, None, (
+                f"Falta configurar la variable de entorno {API_APP_ID_ENV} "
+                "con tu API key de Open Exchange Rates."
+            )
+
+        url = f"{API_BASE_URL}?app_id={app_id}&symbols={from_currency},{to_currency}"
         try:
             with urllib.request.urlopen(url) as response:
                 if response.getcode() != 200:
