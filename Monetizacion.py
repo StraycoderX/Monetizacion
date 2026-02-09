@@ -70,13 +70,19 @@ class CurrencyConverter(http.server.BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"error": "El monto debe ser mayor a cero"}).encode())
             return
 
-        converted_amount, exchange_rate = self.convert_currency(amount_decimal, from_currency, to_currency)
+        converted_amount, exchange_rate, error_message = self.convert_currency(
+            amount_decimal,
+            from_currency,
+            to_currency
+        )
 
         if converted_amount is None:
             self.send_response(500)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            self.wfile.write(json.dumps({"error": "No se pudo realizar la conversión de moneda"}).encode())
+            self.wfile.write(json.dumps({
+                "error": error_message or "No se pudo realizar la conversión de moneda"
+            }).encode())
             return
 
         quantized_amount = converted_amount.quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
@@ -99,28 +105,28 @@ class CurrencyConverter(http.server.BaseHTTPRequestHandler):
         to_currency = to_currency.upper()
 
         if from_currency == to_currency:
-            return amount, Decimal("1")
+            return amount, Decimal("1"), None
 
         url = f"{API_BASE_URL}&symbols={from_currency},{to_currency}"
         try:
             with urllib.request.urlopen(url) as response:
                 if response.getcode() != 200:
                     print(f"Error al obtener tasas de cambio. Código de estado: {response.getcode()}")
-                    return None, None
+                    return None, None, "Error al obtener tasas de cambio."
                 
                 data = json.loads(response.read().decode())
                 if "error" in data:
                     print(f"Error en la respuesta de la API: {data['error']['message']}")
-                    return None, None
+                    return None, None, data["error"]["message"]
 
                 if "rates" not in data or to_currency not in data["rates"]:
                     print("No se encontraron tasas de cambio en la respuesta.")
-                    return None, None
+                    return None, None, "No se encontraron tasas de cambio en la respuesta."
 
                 rates = data["rates"]
                 if from_currency not in rates or to_currency not in rates:
                     print("No se encontraron todas las tasas solicitadas.")
-                    return None, None
+                    return None, None, "No se encontraron todas las tasas solicitadas."
 
                 from_rate = Decimal(str(rates[from_currency]))
                 to_rate = Decimal(str(rates[to_currency]))
@@ -133,15 +139,18 @@ class CurrencyConverter(http.server.BaseHTTPRequestHandler):
                     exchange_rate = to_rate / from_rate
 
                 converted_amount = amount * exchange_rate
-                return converted_amount, exchange_rate
+                return converted_amount, exchange_rate, None
         except urllib.error.HTTPError as e:
             print(f"Error HTTP al acceder a la API: {e}")
+            return None, None, "Error HTTP al acceder a la API."
         except urllib.error.URLError as e:
             print(f"Error de URL al acceder a la API: {e}")
+            return None, None, "Error de URL al acceder a la API."
         except Exception as e:
             print(f"Error inesperado: {e}")
+            return None, None, "Error inesperado al procesar la conversión."
         
-        return None, None
+        return None, None, "No se pudo realizar la conversión."
 
     def serve_file(self, file_path, content_type):
         base_dir = os.path.dirname(os.path.abspath(__file__))
